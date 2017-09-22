@@ -1,0 +1,115 @@
+version: '3'
+
+services:
+  master:
+    image: jaronfitz/elk_swarm
+    volumes:
+      - /data/master:/data
+      - /mnt/ELK/backups:/repo1
+      - /conf/env:/conf/env
+    environment:
+      TYPE: MASTER
+      UNICAST_HOSTS: master
+      MIN_MASTERS: 1
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+  data1:
+    image: jaronfitz/elk_swarm
+    volumes:
+      - /data/data1:/data
+      - /mnt/ELK/backups:/repo1
+      - /conf/env:/conf/env
+    environment:
+      TYPE: DATA
+      UNICAST_HOSTS: master
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 60s
+  data2:
+    image: jaronfitz/elk_swarm
+    volumes:
+      - /data/data2:/data
+      - /mnt/ELK/backups:/repo1
+      - /conf/env:/conf/env
+    environment:
+      TYPE: DATA
+      UNICAST_HOSTS: master
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 60s
+  data3:
+    image: jaronfitz/elk_swarm
+    volumes:
+      - /data/data3:/data
+      - /mnt/ELK/backups:/repo1
+      - /conf/env:/conf/env
+    environment:
+      TYPE: DATA
+      UNICAST_HOSTS: master
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 60s
+  data4:
+    image: jaronfitz/elk_swarm
+    volumes:
+      - /data/data4:/data
+      - /mnt/ELK/backups:/repo1
+      - /conf/env:/conf/env
+    environment:
+      TYPE: DATA
+      UNICAST_HOSTS: master
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 60s
+  gateway:
+    image: jaronfitz/elk_swarm
+    volumes:
+      - /data/gateway:/data
+      - /mnt/ELK/backups:/repo1
+      - /conf/env:/conf/env
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      TYPE: GATEWAY
+      UNICAST_HOSTS: master
+    deploy: 
+      placement:
+        constraints:
+          - node.hostname == ds1
+  ingest:
+    image: jaronfitz/elk_swarm
+    volumes:
+      - /data/ingest:/data
+      - /mnt/ELK/backups:/repo1
+      - /conf/env:/conf/env
+    ports:
+      - "9222:9200"
+    environment:
+      TYPE: INGEST
+      UNICAST_HOSTS: master
+  kibana:
+    image: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_URL: http://gateway:9200
+  cerebro:
+    image: yannart/cerebro
+    ports:
+      - "9000:9000"
+    deploy: 
+      placement:
+        constraints:
+          - node.hostname == ds1
+
