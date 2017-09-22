@@ -9,7 +9,7 @@ production use. [Refer to this guide for more information](https://www.elastic.c
 
 To start an Elasticsearch data node that listens on the standard ports on your host's network interface:
 
-    docker run -d -p 9200:9200 -p 9300:9300 itzg/elasticsearch
+    docker run -d -p 9200:9200 -p 9300:9300 jaronfitz/elk_swarm
 
 You'll then be able to connect to the Elasticsearch HTTP interface to confirm it's alive:
 
@@ -34,15 +34,15 @@ Where `DOCKERHOST` would be the actual hostname of your host running Docker.
 
 To run a multi-node cluster (3-node in this example) on a single Docker machine use:
 
-    docker run -d --name es0 -p 9200:9200                    itzg/elasticsearch
-    docker run -d --name es1 --link es0 -e UNICAST_HOSTS=es0 itzg/elasticsearch
-    docker run -d --name es2 --link es0 -e UNICAST_HOSTS=es0 itzg/elasticsearch
+    docker run -d --name es0 -p 9200:9200                    jaronfitz/elk_swarm
+    docker run -d --name es1 --link es0 -e UNICAST_HOSTS=es0 jaronfitz/elk_swarm
+    docker run -d --name es2 --link es0 -e UNICAST_HOSTS=es0 jaronfitz/elk_swarm
 
 
 and then check the cluster health, such as http://192.168.99.100:9200/_cluster/health?pretty
 
     {
-      "cluster_name" : "elasticsearch",
+      "cluster_name" : "elk_swarm",
       "status" : "green",
       "timed_out" : false,
       "number_of_nodes" : 3,
@@ -55,7 +55,7 @@ and then check the cluster health, such as http://192.168.99.100:9200/_cluster/h
     }
 
 If you have a Docker Swarm cluster already initialized you can download this
-[docker-compose.yml](https://raw.githubusercontent.com/itzg/dockerfiles/master/elasticsearch/docker-compose.yml) and deploy a cluster using:
+[docker-compose.yml](https://raw.githubusercontent.com/jaronfitz/dockerfiles/master/elk_swarm/docker-compose.yml) and deploy a cluster using:
 
     docker stack deploy -c docker-compose.yml es
 
@@ -104,7 +104,7 @@ You can also check the history of health checks from `inspect`, such as:
 
 The following configuration options are specified using `docker run` environment variables (`-e`) like
 
-    docker run ... -e NAME=VALUE ... itzg/elasticsearch
+    docker run ... -e NAME=VALUE ... jaronfitz/elk_swarm
 
 Since Docker's `-e` settings are baked into the container definition, this image provides an extra feature to change any of the settings below for an existing container. Either create/edit the file `env` in the `/conf` volume mapping or edit within the running container's context using:
 
@@ -127,7 +127,7 @@ port mapping out from the container_.
 
 ## Cluster Name
 
-If joining a pre-existing cluster, then you may need to specify a cluster name different than the default "elasticsearch":
+If joining a pre-existing cluster, then you may need to specify a cluster name different than the default "elk_swarm":
 
     -e CLUSTER=dockers
 
@@ -192,7 +192,7 @@ version: '3'
 
 services:
   gateway:
-    image: itzg/elasticsearch
+    image: jaronfitz/elk_swarm
     environment:
       UNICAST_HOSTS: master
       TYPE: GATEWAY
@@ -200,14 +200,14 @@ services:
       - "9200:9200"
 
   master:
-    image: itzg/elasticsearch
+    image: jaronfitz/elk_swarm
     environment:
       UNICAST_HOSTS: gateway
       TYPE: MASTER
       MIN_MASTERS: 2
 
   data:
-    image: itzg/elasticsearch
+    image: jaronfitz/elk_swarm
     environment:
       UNICAST_HOSTS: master,gateway
       TYPE: DATA
