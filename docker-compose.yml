@@ -5,8 +5,8 @@ services:
     image: jaronfitz/elk_swarm
     volumes:
       - /data/master:/data
-      - /mnt/ELK/backups:/repo1
       - /conf/master/env:/conf/env
+      - backup-repo:/repo1:rw
     environment:
       TYPE: MASTER
       UNICAST_HOSTS: master
@@ -19,11 +19,11 @@ services:
         constraints:
           - node.hostname == ds1
   data1:
-    image: jaronfitz/elk_swarm
+    image: jaronfitz/elk3
     volumes:
       - /data/data1:/data
-      - /mnt/ELK/backups:/repo1
       - /conf/data1/env:/conf/env
+      - backup-repo:/repo1:rw
     environment:
       TYPE: DATA
       UNICAST_HOSTS: master
@@ -36,11 +36,11 @@ services:
         constraints:
           - node.hostname == ds1
   data2:
-    image: jaronfitz/elk_swarm
+    image: jaronfitz/elk3
     volumes:
       - /data/data2:/data
-      - /mnt/ELK/backups:/repo1
       - /conf/data2/env:/conf/env
+      - backup-repo:/repo1:rw
     environment:
       TYPE: DATA
       UNICAST_HOSTS: master
@@ -53,11 +53,11 @@ services:
         constraints:
           - node.hostname == ds2
   data3:
-    image: jaronfitz/elk_swarm
+    image: jaronfitz/elk3
     volumes:
       - /data/data3:/data
-      - /mnt/ELK/backups:/repo1
       - /conf/data3/env:/conf/env
+      - backup-repo:/repo1:rw
     environment:
       TYPE: DATA
       UNICAST_HOSTS: master
@@ -70,11 +70,11 @@ services:
         constraints:
           - node.hostname == ds3
   data4:
-    image: jaronfitz/elk_swarm
+    image: jaronfitz/elk3
     volumes:
       - /data/data4:/data
-      - /mnt/ELK/backups:/repo1
       - /conf/data4/env:/conf/env
+      - backup-repo:/repo1:rw
     environment:
       TYPE: DATA
       UNICAST_HOSTS: master
@@ -90,8 +90,8 @@ services:
     image: jaronfitz/elk_swarm
     volumes:
       - /data/gateway:/data
-      - /mnt/ELK/backups:/repo1
       - /conf/gateway/env:/conf/env
+      - backup-repo:/repo1:rw
     ports:
       - "9201:9200"
       - "9301:9300"
@@ -106,8 +106,8 @@ services:
     image: jaronfitz/elk_swarm
     volumes:
       - /data/ingest:/data
-      - /mnt/ELK/backups:/repo1
       - /conf/ingest/env:/conf/env
+      - backup-repo:/repo1:rw
     ports:
       - "9222:9200"
     environment:
@@ -118,9 +118,9 @@ services:
         constraints:
           - node.hostname == ds1
   kibana:
-    image: kibana
-    ports:
-      - "5601:5601"
+    image: kibana:5.5.0
+#    ports:
+#      - "5601:5601"
     environment:
       ELASTICSEARCH_URL: http://gateway:9200
     deploy: 
@@ -137,3 +137,33 @@ services:
       placement:
         constraints:
           - node.hostname == ds1
+  kibanaproxy:
+    image: nginx
+    volumes: 
+      - /root/kibanaproxy/certs/:/etc/nginx/certs
+      - /root/kibanaproxy/conf.d/:/etc/nginx/conf.d
+      - /root/kibanaproxy/proxy_params:/etc/nginx/proxy_params
+    ports:
+      -  "443:443"
+      -  "80:80"
+    environment:
+      - NGINX_HOST=kibana.infobate.com
+      - NGINX_PORT=443
+    deploy:  
+      placement:
+        constraints:
+          - node.hostname == ds1
+volumes:
+  backup-repo:
+    driver: cifs
+    driver_opts:
+      share: 192.168.168.213/ELK
+      domain: DATACENTER
+      username: nas03local2
+      password: spicybuffalocar
+  # datafiles: {}
+  # datafiles_archive: {}
+  # superset_data: {}
+  # postgres_data: {}
+  # webapp: {}
+

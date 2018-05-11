@@ -4,7 +4,7 @@ LABEL maintainer "jaronfitz"
 
 RUN apk -U add bash
 
-ARG ES_VERSION=5.5.0
+ARG ES_VERSION=5.6.3
 # avoid conflicts with debian host systems when mounting to host volume
 ARG DEFAULT_ES_USER_UID=1100
 
@@ -19,12 +19,12 @@ RUN cd /usr/share && \
 
 EXPOSE 9200 9300
 
-HEALTHCHECK --timeout=5s CMD wget -q -O - http://$HOSTNAME:9200/_cat/health
+HEALTHCHECK --timeout=10s CMD wget -q -O - http://$HOSTNAME:9200/_cat/health
 
 ENV ES_HOME=/usr/share/elasticsearch-$ES_VERSION \
     DEFAULT_ES_USER=elasticsearch \
     DEFAULT_ES_USER_UID=$DEFAULT_ES_USER_UID \
-    ES_JAVA_OPTS="-Xms8g -Xmx8g"
+    ES_JAVA_OPTS="-Xms24g -Xmx24g"
 
 RUN adduser -S -s /bin/sh -u $DEFAULT_ES_USER_UID $DEFAULT_ES_USER
 

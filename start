@@ -136,10 +136,10 @@ fi
 OPTS="$OPTS \
   -E path.conf=/conf \
   -E path.data=/data \
-  -E path.repo=/repo1 \
   -E path.logs=/data \
   -E transport.tcp.port=9300 \
-  -E http.port=9200"
+  -E http.port=9200 \
+  -E path.repo=/repo1"
 
 discoverAllGlobalIps
 if [ "${DISCOVER_TRANSPORT_IP}" != "" ]; then
@@ -159,7 +159,7 @@ echo "Starting Elasticsearch with the options $OPTS"
 CMD="$ES_HOME/bin/elasticsearch $OPTS"
 if [ `id -u` = 0 ]; then
   echo "Running as non-root..."
-  chown -R $DEFAULT_ES_USER /data /conf
+  chown -R $DEFAULT_ES_USER /data /conf /repo1
   su -c "$CMD" $DEFAULT_ES_USER
 else
   $CMD
