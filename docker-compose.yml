@@ -1,3 +1,6 @@
+#ALIAS for updating and deploying = elkswarm
+#docker stack deploy -c /root/docker-compose.yml elk
+#pssh -h /pssh/all sshfs elk:/tank1/elk /mnt/ELK/backups -o allow_other
 version: '3'
 
 services:
@@ -121,6 +124,8 @@ services:
     image: kibana:5.5.0
 #    ports:
 #      - "5601:5601"
+    expose:
+      - "5601"
     environment:
       ELASTICSEARCH_URL: http://gateway:9200
     deploy: 

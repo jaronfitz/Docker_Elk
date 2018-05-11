@@ -218,7 +218,21 @@ services:
       - "5601:5601"
     environment:
       ELASTICSEARCH_URL: http://gateway:9200
-
+  kibanaproxy:
+    image: nginx
+    volumes:
+      - /root/kibanaproxy/certs/:/etc/nginx/certs
+      - /root/kibanaproxy/conf.d/:/etc/nginx/conf.d
+    ports:
+      -  "443:443"
+      -  "80:80"
+    environment:
+      - NGINX_HOST=kibana.infobate.com
+      - NGINX_PORT=443
+    deploy:
+      placement:
+        constraints:
+          - node.hostname == ds1
 ```
 
 ## Minimum Master Nodes
@@ -256,3 +270,7 @@ For example, this would allow for the use of 16 GB of heap:
 Refer to [this page](https://www.elastic.co/guide/en/elasticsearch/reference/current/heap-size.html)
 for more information about why both the minimum and maximum sizes were set to
 the same value.
+
+## Setting up the proxy
+
+I'm using the Infobate wildcard certs for this reverse proxy.  The htaccess file in ~/kibanaproxy/certs/ is the authentication for kibana.  It forwards from 80 > https://kibana.infobate.com and hits port 5601 on the back end of the docker network.  5601:5601 was removed from the docker-compose.yml file because that would allow 0.0.0.0:5601 to be accessible.  It's now only exposed to the docker network.
